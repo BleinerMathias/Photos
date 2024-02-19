@@ -12,15 +12,15 @@ import com.google.gson.Gson
 import java.net.HttpURLConnection.HTTP_NOT_MODIFIED
 import java.net.HttpURLConnection.HTTP_OK
 
-class DummyJSONAPI(context: Context) {
+class JSONplaceholderAPI(context: Context) {
     companion object {
-        const val PRODUCTS_ENDPOINT = "https://dummyjson.com/products/"
+        const val PRODUCTS_ENDPOINT = "https://jsonplaceholder.typicode.com/photos/"
 
         @Volatile
-        private var INSTANCE: DummyJSONAPI? = null
+        private var INSTANCE: JSONplaceholderAPI? = null
 
         fun getInstance(context: Context) = INSTANCE?: synchronized(this){
-            INSTANCE?: DummyJSONAPI(context).also{
+            INSTANCE?: JSONplaceholderAPI(context).also{
                 INSTANCE = it
             }
         }
@@ -31,25 +31,23 @@ class DummyJSONAPI(context: Context) {
         Volley.newRequestQueue(context.applicationContext) // aplicationContext para a fila valer para todos
     }
 
-    // Única fila de request para atender todos
     fun<T> addToRequestQueue(request:Request<T>){
         requestQueue.add(request)
     }
 
 
-    // Na função abaixo iremos isolar a conversão json que tinhamos na MAIN ACTIVITY
-    class ProductListRequest(
-        private val responseListener:Response.Listener<ProductList>,
+    class PhotoListRequest(
+        private val responseListener:Response.Listener<PhotoList>,
         errorListener: Response.ErrorListener
-    ):Request<ProductList>(Method.GET, PRODUCTS_ENDPOINT,errorListener){
+    ):Request<PhotoList>(Method.GET, PRODUCTS_ENDPOINT,errorListener){
 
         // Recebe um objeto que não contém formatação (byte)
-        override fun parseNetworkResponse(response: NetworkResponse?): Response<ProductList> {
+        override fun parseNetworkResponse(response: NetworkResponse?): Response<PhotoList> {
             // Converter para json
             return if(response?.statusCode == HTTP_OK || response?.statusCode == HTTP_NOT_MODIFIED){
                 String(response.data).run{
                     Response.success(
-                        Gson().fromJson(this,ProductList::class.java),
+                        Gson().fromJson(this,PhotoList::class.java),
                         HttpHeaderParser.parseCacheHeaders(response)
                     )
                 }
@@ -58,7 +56,7 @@ class DummyJSONAPI(context: Context) {
             }
         }
 
-        override fun deliverResponse(response: ProductList?) {
+        override fun deliverResponse(response: PhotoList?) {
             responseListener.onResponse(response)
         }
 
